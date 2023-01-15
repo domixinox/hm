@@ -1,0 +1,427 @@
+;;;;;;
+select * from PRACOWNICY_DB,Zakłady_DB
+where Zakłady_DB.nazwa in('Maszynoznawstwa')
+and PRACOWNICY_DB.zID=ZAKŁADY_DB.zID and płaca <> 2250;
+';;;;;;;
+
+W połączeniu z operatorem LIKE często używane są różne symbole wieloznaczne:
+% - reprezentuje zero, jeden lub wiele znaków,
+_ - reprezentuje dokładnie jeden dowolny znak,
+[] - reprezentuje konkretny znak(i) zamieszczony w nawiasie,
+[^] - reprezentuje dowolny znak(i) nie zamieszczany w nawiasie,
+[-] - reprezentuje wiele znaków z zakresu.
+
+ jest podstawową funkcją konwersji
+SELECT imię + ' ' + nazwisko + ' '
+ + CAST(wiek AS VARCHAR) + ' lat(a)' AS dane
+FROM Klient;
+
+
+CREATE TABLE Klient
+(
+ kID INT NOT NULL IDENTITY(1,1),
+ imie VARCHAR(35),
+ nazwisko VARCHAR(35),
+ telefon DECIMAL(10,0),
+ email CHAR(30)
+ PRIMARY KEY (kID)
+); 
+
+select * into Klient_DB_kopia from Klient_DB;
+
+CREATE TABLE #Klient_TEMP
+(
+ kID INT,
+ nazwisko VARCHAR(35),
+ imię VARCHAR(35)
+);
+
+DROP TABLE Klient_kopia;
+
+ALTER TABLE Klient ADD wysokość INT, koczu VARCHAR(35);
+ALTER TABLE Klient ADD wysokość INT, koczu VARCHAR(35);
+ALTER TABLE Klient DROP COLUMN wysokość, COLUMN koczu;
+EXEC sp_rename 'Klient.lata', 'wiek', 'COLUMN';
+ALTER TABLE Klient
+DROP CONSTRAINT PK__klient__DFD8DB46BE53776B 
+ALTER TABLE Klient ADD PRIMARY KEY(kID)
+
+ALTER TABLE Klient
+ADD CONSTRAINT Nazwisko_unikalne UNIQUE (nazwisko)
+
+ALTER TABLE Klient
+ADD CONSTRAINT Wiek_pomiędzy CHECK (wiek BETWEEN 18 AND 25)
+
+ALTER TABLE Klient DROP CONSTRAINT Nazwisko_unikalne;
+
+
+insert into Klient_DB values (
+'Jan',
+'Kowalski',
+618666666,
+'jkowalski@o2.pl',
+20
+);
+
+UPDATE Klient_DB SET telefon = 618555555, email = 'jkowal@o2.pl'
+WHERE imie = 'Jan' AND nazwisko = 'Kowalski';
+
+delete from Klient_DB where imie='Kamil';
+
+=====================
+
+SELECT * FROM Klient WHERE kID IN (1,2,3);
+
+SELECT * FROM Klient
+WHERE NOT telefon = 618546234; 
+
+SELECT DISTINCT nazwisko FROM Klient;
+
+SELECT imię + ' ' + nazwisko AS 'imię i nazwisko' FROM Klient;
+
+=====================
+
+SELECT * FROM Klient WHERE nazwisko LIKE '_owa%';
+
+SELECT * FROM Klient
+WHERE imię LIKE '[JM]%';
+
+zwraca wartość typu integer, równej liczbie znaków 
+SELECT nazwisko, LEN(nazwisko) AS rozmiar
+FROM Klient;
+
+pozwala na łączenie kilku ciągów znaków
+SELECT CONCAT(imię, ' ', nazwisko) AS klient
+FROM Klient;   
+
+zamieniają wszystkie litery na duże lub małe. 
+SELECT UPPER(nazwisko) AS nazwisko, UPPER(imię) AS imię,
+LOWER(email) AS email FROM Klient;
+
+podmienia każde wystąpienie ciągu znaków
+SELECT telefon , REPLACE ( telefon , '618', '61-8') AS telefon2
+FROM Klient
+
+usuwa n znaków wyrażenia exp1 zaczynając od pozycji
+określonej parametrem start.
+SELECT imię + ' ' + STUFF(nazwisko, 1, LEN(nazwisko), 'XXXXX') AS RODO
+FROM Klient;
+
+Zwracają n znaków od lewej lub prawej
+SELECT LEFT(imię,1) + '. ' + nazwisko AS klient,
+ LEFT(telefon,2) AS kierunkowy,
+ RIGHT(telefon,7) AS numer
+FROM Klient;
+
+ szuka pierwszego wystąpienia ciągu znaków exp1 w wartości znakowej podanej jako argument exp2.
+SELECT CHARINDEX ('8', telefon) AS pozycja
+
+zwraca fragment tekstu, liczbę n znaków
+z wyrażenia podanego w parametrze exp, startując od zadanego miejsca start_location. 
+SELECT email,
+ SUBSTRING(email, CHARINDEX('@', email)+1,
+ LEN(email) - CHARINDEX('.', email)) AS domena
+FROM Klient;
+
+ służy do wyszukiwania pierwszego wystąpienia dopasowania
+maski – określonej parametrem pattern w danym wyrażeniu exp.
+SELECT nazwisko FROM Klient
+WHERE PATINDEX('%owa%', nazwisko) > 0;
+
+
+służy do konwersji wartości różnych typów na odpowiednio
+sformatowany łańcuch znaków.
+SELECT imię + ' ' + nazwisko AS klient,
+FORMAT(telefon,'+48 000 000 000') AS telefon FROM Klien
+
+====
+
+SELECT Klient.nazwisko, Zamówienia.data, Zamówienia.koszt
+FROM Klient, Zamówienia
+WHERE Zamówienia.kID = Klient.kID; 
+
+SELECT Klient.nazwisko, Zamówienia.data, Zamówienia.koszt
+FROM Klient JOIN Zamówienia
+ON Klient.kID = Zamówienia.kID;
+
+LEFT JOIN lub też zamiennie LEFT OUTER JOIN to złączenie zewnętrzne. Wynikiem
+zapytania będą wszystkie rekordy z tabeli 1 i tylko te rekordy z tabeli 2, które możemy dopasować.
+W przypadku, gdy rekord z tabeli 2 nie zostanie dopasowany, wyświetlona zostanie wartość NULL.
+
+RIGHT JOIN jest dokładną odwrotnością złączenia LEFT. W przypadku łączenia kolejno tabeli 1
+i tabeli 2, zostają zwrócone wszystkie rekordy z tabeli 2 i tylko te rekordy z tabeli 1, które możemy
+dopasować. Podobnie jak w przypadku poprzedniego przykładu, rekordy niedopasowane otrzymają
+wartość NULL. 
+
+FULL JOIN lub też zamiennie FULL OUTER JOIN to złączenie, które nie tylko pokazuje
+wszystkie dopasowane dane z obydwu tabel, ale także dane niedopasowane. W miejscu
+niedopasowania zapytanie zwróci nam wartość NULL
+
+SELECT nazwisko FROM Klient
+UNION
+SELECT nazwisko FROM Klient2;
+Złączenie UNION służy do łączenia dwóch tabel, widoków lub zapytań. Wynikiem jest zestaw
+danych zawierający wszystkie rekordy, które wchodziły w skład obu zapytań z wyłączeniem
+duplikatów. Rekordy zduplikowane zostają usunięte z wyników zapytania. 
+
+Złączenie UNION ALL jest podobne w działaniu do złączenia UNION. Główna różnica polega na
+tym, że w wyniku zapytania SQL z użyciem UNION ALL duplikaty nie zostaną usunięte. Wynik
+będzie zawierał wszystkie rekordy z tabeli 1 i wszystkie rekordy z tabeli 2. 
+
+Złączenie EXCEPT służy do wykluczania rekordów z zapytań. Zwraca rekordy z Tabeli 1, które
+jednocześnie nie występują w Tabeli 2. EXCEPT’a używamy w przypadkach, gdy np posiadamy
+tabelę rekordów, których nie chcemy widzieć w wynikach zapytania SQL. Za pomocą EXCEPT
+łatwo możemy je wykluczyć. 
+
+Złączenie INTERSECT SQL w odróżnieniu od UNION zwraca część wspólna rekordów z obu
+tabel. Tak więc, jeśli łączymy dwa zapytania za pomocą INTERSECT’a, wynikiem zapytania będą
+tylko te rekordy, które występowały w obu tabelach jednocześnie.
+
+========
+
+SELECT nazwa, ABS(cena) AS cena FROM Produkty;
+
+SELECT nazwa, ROUND(cena,1) AS cena FROM Produkty;
+
+SELECT nazwa, FLOOR(cena) AS cena FROM Produkty;
+
+SELECT nazwa, CEILING(cena) AS cena FROM Produkty;
+
+RAND() – wyznacza losową liczbę typu float z zakresu 0-1. 
+
+SQUARE(liczba) – zwraca kwadrat liczby
+
+POWER(podstawa, wykładnik)
+
+SQRT(liczba)
+
+MIN(nazwa_kolumny) – wyznacza najmniejszą wartości w kolumnie,
+• MAX(nazwa_kolumny) – wyznacza największą wartości w kolumnie,
+• SUM(nazwa_kolumny) – sumuje wartości w danej kolumnie,
+• COUNT(nazwa_kolumny) – zlicza liczbę wierszy w kolumnie,
+• COUNT(*) - zlicza liczbę zwróconych przez zapytanie wierszy,
+• AVG(nazwa_kolumny) – oblicza średnią,
+• VAR(nazwa_kolumny) - oblicza wariancję,
+• STD(nazwa_kolumny) - oblicza odchylenie standardowe
+
+GROUP BY
+
+
+SELECT nazwisko + SPACE(1) + imię AS klient,
+SUM(koszt) AS wydatki
+FROM Klient JOIN Zamówienia
+ON Klient.kID = Zamówienia.kID
+GROUP BY nazwisko, imię;
+
+Dyrektywa HAVING zawsze występuje za dyrektywą GROUP BY. Jej zadaniem jest filtrowanie
+zgrupowanych wyników zapytania agregującego.
+SELECT nazwisko + SPACE(1) + imię AS klient,
+COUNT(zID) AS liczba_zamówień
+FROM Klient JOIN Zamówienia
+ON Klient.kID = Zamówienia.kID
+GROUP BY nazwisko, imię
+HAVING COUNT(zID) > 1
+ORDER BY liczba_zamówień DESC;
+
+SELECT Zakłady_DB.nazwa,
+COUNT(pID) AS Liczba_pracowników
+FROM Zakłady_DB
+JOIN Pracownicy_DB ON Zakłady_DB.zID = Pracownicy_DB.zID
+Group By nazwa
+order by Liczba_pracowników desc;
+
+=========
+
+SELECT nazwisko FROM Klient WHERE kid IN
+(
+SELECT kid FROM Zamówienia
+GROUP BY kid
+HAVING COUNT(*) > 2
+)
+
+
+SELECT * FROM
+ (
+ SELECT imię, nazwisko, email
+ FROM Klient
+ )
+AS dane
+WHERE imię = 'Jan';
+
+SELECT * FROM Pracownicy_DB
+WHERE płaca <
+(
+SELECT AVG(płaca)
+FROM Pracownicy_DB
+);
+=======
+
+CREATE VIEW Klient_kontakt
+AS SELECT imię, nazwisko, telefon
+FROM Klient;
+SELECT * FROM Klient_kontakt WHERE imię LIKE '%Ja%'; 
+
+DROP VIEW Klient_zamówienia; 
+
+CREATE INDEX Klient_indeks
+ON Klient (nazwisko);
+
+======
+
+DECLARE @Imię VARCHAR(50);
+DECLARE @Nazwisko VARCHAR(50);
+SET @Imię = (SELECT imię FROM Klient WHERE kID=1);
+SET @Nazwisko = (SELECT nazwisko FROM Klient WHERE kID=1)
+PRINT 'Imię klienta to: ' + @Imię;
+PRINT 'Nazwisko klienta to: ' + @Nazwisko;
+
+DECLARE @Imię VARCHAR(50);
+SET @Imię = 'Jan';
+SELECT imię, nazwisko FROM Klient WHERE imię = @Imię;
+
+DECLARE @Tabela TABLE (a VARCHAR(MAX),
+ b VARCHAR(MAX),
+ c VARCHAR(MAX))
+INSERT INTO @Tabela
+SELECT imię, nazwisko, email
+FROM Klient
+SELECT * FROM @Tabela;
+
+select @Imię = imię, @Nazwisko = nazwisko, @zamowienia = COUNT(zID), @koszt = SUM(koszt)
+from Klient_BD
+
+DECLARE @Imię VARCHAR(50);
+DECLARE @Nazwisko VARCHAR(50);
+declare @liczba decimal(10,0)
+declare @koszt decimal(10,0)
+select @imię =imię, @nazwisko = nazwisko, @liczba = SUM(ilość), @koszt = SUM(koszt) from
+Klient_BD
+JOIN Zamówienia_db on Klient_BD.kID=Zamówienia_db.kID
+join ZamProd_DB on Zamówienia_DB.zID=ZamProd_DB.zID
+join Produkty_db on ZamProd_DB.pID=Produkty_DB.pID
+group by imię, nazwisko
+order by SUM(ilość) DESC;
+begin
+if @liczba = 0
+PRINT @Imię + ' ' + @nazwisko + ' (klient bez zakupów)'
+else if @liczba between 1 and 10
+PRINT @Imię + ' ' + @nazwisko + ' (klient detaliczny)'
+else if @liczba between 11 and 100
+PRINT @Imię + ' ' + @nazwisko + ' (klient hurtowy)'
+else if @liczba > 100
+PRINT @Imię + ' ' + @nazwisko + ' (klient stały)'
+end
+
+
+DECLARE @Imię VARCHAR(50);
+DECLARE @Nazwisko VARCHAR(50);
+declare @zamowienia decimal(10,0)
+declare @koszt decimal(10,0)
+declare @licznik as int = 1;
+while @licznik < 10
+begin
+set @zamowienia=0;
+select @Imię = imię, @Nazwisko = nazwisko, @zamowienia = COUNT(zID), @koszt = SUM(koszt)
+from Klient_DB
+JOIN Zamówienia_db on Klient_db.kID=Zamówienia_db.kID
+where Klient_db.kID = @licznik
+group by imię, nazwisko;
+IF @zamowienia = 0
+begin
+SET @licznik = @licznik + 1
+continue
+end
+ELSE
+begin
+PRINT @Imię + ' ' + @nazwisko + '[' + cast(@zamowienia as varchar(50)) + ':' + cast(@koszt
+as varchar(50)) + 'zł]'
+SET @licznik = @licznik + 1
+end
+end;
+
+CREATE FUNCTION SumaDwóchWartości (@wartość_1 INT, @wartość_2 INT)
+RETURNS INT
+AS
+BEGIN
+ RETURN (@wartość_1 + @wartość_2)
+END
+
+CREATE FUNCTION ListaKlientówWiek (@wiek INT)
+RETURNS TABLE
+AS
+RETURN (
+ SELECT imię, nazwisko, wiek
+ FROM Klient
+ WHERE wiek > @wiek
+)
+SELECT * FROM ListaKlientówWiek(20);
+
+11.
+create FUNCTION Emerytura (@wiek_emerytalny INT)
+RETURNS @emeryci TABLE
+(
+nazwisko VARCHAR(50),
+imię VARCHAR(50),
+lat_do_emerytury int
+)
+as
+begin
+insert @emeryci
+select imię, nazwisko, @wiek_emerytalny - (Year(GETDATE()) - (YEAR(zatrudniony)-20)) as
+lat_do_emerytury from Pracownicy_DB
+return
+end
+select * from Emerytura(87)
+=======
+
+CREATE PROCEDURE dbo.AdresEmailKlienta @imię VARCHAR(50) = NULL,
+ @nazwisko VARCHAR(50) = NULL
+AS
+SELECT email FROM Klient
+WHERE imię = @imię
+AND nazwisko = @nazwisko
+EXEC dbo.AdresEmailKlienta @imię='Jan', @nazwisko='Kowalski'
+
+
+CREATE PROCEDURE dbo.LiczbaKlientówWiek @wiek INT = NULL, @klienci INT OUT
+AS
+SELECT @klienci = COUNT(*)
+FROM Klient
+WHERE wiek = @wiek
+Wywołanie takiej procedury wygląda w następujący sposób:
+DECLARE @klienci INT
+EXEC dbo.LiczbaKlientówWiek @wiek = 20, @klienci = @klienci OUT
+SELECT @klienci
+
+CREATE TRIGGER TabelaProdukty_INSERT_2 ON TabelaProdukty
+AFTER INSERT
+AS
+DECLARE @nazwa VARCHAR(MAX) = (SELECT nazwa FROM INSERTED)
+DECLARE @cena INT = (SELECT cena FROM INSERTED)
+PRINT 'Wstawiasz następujące dane :'
+PRINT @nazwa + ' ' + CAST(@cena AS VARCHAR(MAX)) + ' zł';
+
+CREATE TRIGGER TabelaProdukty_INSTEAD_OF_INSERT
+ON TabelaProdukty
+INSTEAD OF INSERT
+AS
+PRINT 'Tabela jest zablokowana nie można wprowadzać wartości'
+
+CREATE TRIGGER TabelaProdukty_DELETE ON TabelaProdukty
+AFTER DELETE
+AS
+BEGIN
+ DECLARE @Ilość INT
+ SET @Ilość = (SELECT COUNT(*) FROM TabelaProdukty)
+ PRINT 'W tabeli pozostało ' + CAST(@Ilość as VARCHAR(4))
+ + ' produkt(y/ów)'
+END
+
+BEGIN TRY
+ SELECT 1
+ SELECT 2
+ SELECT 1/0
+END TRY
+BEGIN CATCH
+ PRINT 'Wystąpił błąd.'
+END CATCH
